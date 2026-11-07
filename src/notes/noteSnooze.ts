@@ -27,9 +27,9 @@ export function getSnoozeOptions(now: number): SnoozeOption[] {
   const nextWeek = morningAfter(now, daysUntilNextMonday(now));
 
   return [
-    { label: "For 1 hour", detail: formatNoteTime(inOneHour), until: inOneHour },
-    { label: "Until tomorrow", detail: formatNoteTime(tomorrow), until: tomorrow },
-    { label: "Until next week", detail: formatWeekdayTime(nextWeek), until: nextWeek },
+    { label: "1 hour", detail: formatNoteTime(inOneHour), until: inOneHour },
+    { label: "Tomorrow", detail: formatNoteTime(tomorrow), until: tomorrow },
+    { label: "Next week", detail: formatWeekdayTime(nextWeek), until: nextWeek },
   ];
 }
 

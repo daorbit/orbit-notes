@@ -20,7 +20,6 @@ export type FloaterViewState = {
   receipt: FloaterReceipt | null;
   completingIds: Set<string>;
   newIds: Set<string>;
-  site: string;
   now: number;
 };
 
@@ -99,7 +98,7 @@ export function renderFloaters(container: HTMLElement, state: FloaterViewState, 
   if (state.receipt) content.push(createReceipt(state.receipt, actions));
 
   const menuNote = state.notes.find((note) => note.id === state.menuNoteId);
-  const menu = menuNote && createMenu(menuNote, state.corner, state.site, state.now, actions);
+  const menu = menuNote && createMenu(menuNote, state.corner, state.now, actions);
   if (menu) content.push(menu);
 
   container.dataset.corner = state.corner;

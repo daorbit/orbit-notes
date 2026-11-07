@@ -22,10 +22,12 @@ function createMenuItem(label: string, focusKey: string, onClick: () => void, de
   return item;
 }
 
-function createCornerPicker(currentCorner: FloaterCorner, actions: FloaterActions): HTMLElement {
+function createCornerRow(currentCorner: FloaterCorner, actions: FloaterActions): HTMLElement {
+  const row = createElement("div", "cornerRow");
   const picker = createElement("div", "cornerPicker");
   picker.setAttribute("role", "group");
-  picker.setAttribute("aria-label", "Move to");
+  picker.setAttribute("aria-label", "Position");
+  row.append(createElement("span", "menuLabel", "Position"), picker);
 
   for (const corner of FLOATER_CORNERS) {
     const option = createButton("cornerOption", `menu-corner-${corner}`, () => actions.onMoveTo(corner));
@@ -38,7 +40,7 @@ function createCornerPicker(currentCorner: FloaterCorner, actions: FloaterAction
     picker.append(option);
   }
 
-  return picker;
+  return row;
 }
 
 function moveFocus(menu: HTMLElement, key: string): void {
@@ -69,7 +71,7 @@ function handleMenuKeys(menu: HTMLElement, actions: FloaterActions): void {
   });
 }
 
-export function createMenu(note: Note, corner: FloaterCorner, site: string, now: number, actions: FloaterActions): HTMLElement {
+export function createMenu(note: Note, corner: FloaterCorner, now: number, actions: FloaterActions): HTMLElement {
   const menu = createElement("div", "menu glass");
   menu.setAttribute("role", "menu");
   menu.setAttribute("aria-label", "Note actions");
@@ -79,10 +81,11 @@ export function createMenu(note: Note, corner: FloaterCorner, site: string, now:
     menu.append(createMenuItem(option.label, `menu-snooze-${index}`, () => actions.onSnooze(note, option), option.detail));
   });
 
-  menu.append(createElement("div", "menuSeparator"), createElement("div", "menuHeading", "Move to"), createCornerPicker(corner, actions));
   menu.append(
     createElement("div", "menuSeparator"),
-    createMenuItem(`Hide on ${site}`, "menu-hide-site", actions.onHideSite),
+    createCornerRow(corner, actions),
+    createElement("div", "menuSeparator"),
+    createMenuItem("Hide on this site", "menu-hide-site", actions.onHideSite),
     createMenuItem("Remove from tabs", "menu-remove", () => actions.onRemove(note)),
   );
 

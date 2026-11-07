@@ -21,6 +21,7 @@ const COMPLETE_ANIMATION_MS = 420;
 const RECEIPT_DURATION_MS = 6000;
 const RECEIPT_RECHECK_MS = 1500;
 const SCROLL_SETTLE_MS = 180;
+const APPEARANCE_SAMPLE_INSET_PX = 40;
 const MAX_TIMER_MS = 2_147_483_647;
 const SAVE_FAILED = "That change isn’t saved. Reload this page.";
 
@@ -67,9 +68,13 @@ export function startFloaterController({ host, shadow, stack, announcer }: Contr
   }
 
   function updateAppearance(): void {
-    if (!host.isConnected) return;
-    const { left, top, width, height } = stack.getBoundingClientRect();
-    stack.dataset.appearance = detectPageAppearance(host, { x: left + width / 2, y: top + height / 2 });
+    if (!host.isConnected || !preferences) return;
+    const { left, right, top, bottom } = stack.getBoundingClientRect();
+    const [vertical, horizontal] = preferences.corner.split("-");
+    stack.dataset.appearance = detectPageAppearance(host, {
+      x: horizontal === "left" ? left + APPEARANCE_SAMPLE_INSET_PX : right - APPEARANCE_SAMPLE_INSET_PX,
+      y: vertical === "top" ? top + APPEARANCE_SAMPLE_INSET_PX : bottom - APPEARANCE_SAMPLE_INSET_PX,
+    });
   }
 
   function restoreFocus(previousKey: string | undefined): void {
@@ -109,7 +114,6 @@ export function startFloaterController({ host, shadow, stack, announcer }: Contr
         receipt,
         completingIds,
         newIds,
-        site,
         now,
       },
       actions,
@@ -241,7 +245,7 @@ export function startFloaterController({ host, shadow, stack, announcer }: Contr
       if (!preferences) return;
       const hiddenSites = preferences.hiddenSites;
       menuNoteId = null;
-      showReceipt(`Hidden on ${site}`, () => {
+      showReceipt(`Hidden on ${site.replace(/^www\./, "")}`, () => {
         setPreferences({ hiddenSites });
         dismissReceipt();
       });

@@ -49,6 +49,17 @@
   line-height: 1.25;
 }
 
+.source {
+  flex: none;
+  margin: -4px 0 10px;
+  overflow: hidden;
+  color: var(--label-secondary);
+  font-size: 12px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .body {
   flex: 1;
   min-height: 0;
