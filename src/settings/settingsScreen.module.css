@@ -1,0 +1,27 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+.rowAction {
+  height: 26px;
+  padding: 0 8px;
+  color: var(--accent-strong);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.chevron {
+  flex: none;
+  color: var(--label-secondary);
+}
+
+.fileInput {
+  display: none;
+}

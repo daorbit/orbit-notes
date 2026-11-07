@@ -1,0 +1,37 @@
+.button {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.ring {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1.75px solid var(--accent-strong);
+  border-radius: 50%;
+  color: transparent;
+  transition: background-color 120ms linear, color 120ms linear;
+}
+
+.button:hover .ring {
+  color: var(--accent-strong);
+}
+
+.button[aria-pressed="true"] .ring {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ring {
+    transition: none;
+  }
+}

@@ -1,19 +1,21 @@
 import { Menu } from "@mantine/core";
-import { Ellipsis, Flag, FlagOff, Pencil, Pin, PinOff, Trash2 } from "lucide-react";
+import { CircleCheck, CircleDashed, Ellipsis, Flag, FlagOff, Pencil, Pin, PinOff, Trash2 } from "lucide-react";
 import { IconButton } from "@/ui/IconButton";
+import { isDone } from "../noteSelectors";
+import type { Note } from "../types";
+import type { NoteActions } from "../useNoteActions";
 import classes from "./noteRowMenu.module.css";
 
 type NoteRowMenuProps = {
+  note: Note;
   title: string;
-  isPinned: boolean;
-  isImportant: boolean;
+  actions: NoteActions;
   onEdit: () => void;
-  onTogglePin: () => void;
-  onToggleImportant: () => void;
-  onDelete: () => void;
 };
 
-export function NoteRowMenu({ title, isPinned, isImportant, onEdit, onTogglePin, onToggleImportant, onDelete }: NoteRowMenuProps) {
+export function NoteRowMenu({ note, title, actions, onEdit }: NoteRowMenuProps) {
+  const noteIsDone = isDone(note);
+
   return (
     <Menu
       position="bottom-end"
@@ -31,14 +33,19 @@ export function NoteRowMenu({ title, isPinned, isImportant, onEdit, onTogglePin,
         <Menu.Item leftSection={<Pencil size={14} />} onClick={onEdit}>
           Edit
         </Menu.Item>
-        <Menu.Item leftSection={isImportant ? <FlagOff size={14} /> : <Flag size={14} />} onClick={onToggleImportant}>
-          {isImportant ? "Remove from tabs" : "Mark as important"}
+        <Menu.Item leftSection={noteIsDone ? <CircleDashed size={14} /> : <CircleCheck size={14} />} onClick={() => actions.toggleDone(note)}>
+          {noteIsDone ? "Mark as not done" : "Mark as done"}
         </Menu.Item>
-        <Menu.Item leftSection={isPinned ? <PinOff size={14} /> : <Pin size={14} />} onClick={onTogglePin}>
-          {isPinned ? "Unpin" : "Pin"}
+        {!noteIsDone && (
+          <Menu.Item leftSection={note.important ? <FlagOff size={14} /> : <Flag size={14} />} onClick={() => actions.toggleImportant(note)}>
+            {note.important ? "Remove from tabs" : "Mark as important"}
+          </Menu.Item>
+        )}
+        <Menu.Item leftSection={note.pinned ? <PinOff size={14} /> : <Pin size={14} />} onClick={() => actions.togglePin(note)}>
+          {note.pinned ? "Unpin" : "Pin"}
         </Menu.Item>
         <Menu.Divider />
-        <Menu.Item className={classes.danger} leftSection={<Trash2 size={14} />} onClick={onDelete}>
+        <Menu.Item className={classes.danger} leftSection={<Trash2 size={14} />} onClick={() => actions.moveToTrash(note)}>
           Delete
         </Menu.Item>
       </Menu.Dropdown>

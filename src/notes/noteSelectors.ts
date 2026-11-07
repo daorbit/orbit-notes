@@ -1,4 +1,6 @@
-import type { Note, NoteGroup, NoteValues } from "./types";
+import type { Note, NoteFilter, NoteGroup, NoteValues } from "./types";
+
+export const TRASH_RETENTION_DAYS = 30;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const UNTITLED = "Untitled";
@@ -35,8 +37,45 @@ export function getNoteDescription(note: NoteValues): string {
   return (note.title.trim() ? lines : lines.slice(1)).join(" ");
 }
 
-export function getImportantNotes(notes: Note[]): Note[] {
-  return notes.filter((note) => note.important).sort((a, b) => b.updatedAt - a.updatedAt);
+export function isDone(note: Note): boolean {
+  return note.doneAt !== undefined;
+}
+
+export function isSnoozed(note: Note, now: number): boolean {
+  return note.snoozedUntil !== undefined && note.snoozedUntil > now;
+}
+
+export function getFloatingNotes(notes: Note[], now: number): Note[] {
+  return notes
+    .filter((note) => note.important && !isDone(note) && note.deletedAt === undefined && !isSnoozed(note, now))
+    .sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
+export function getNextSnoozeEnd(notes: Note[], now: number): number | null {
+  const ends = notes.filter((note) => note.important && !isDone(note) && note.deletedAt === undefined && isSnoozed(note, now)).map((note) => note.snoozedUntil as number);
+  return ends.length > 0 ? Math.min(...ends) : null;
+}
+
+export function filterNotes(notes: Note[], filter: NoteFilter): Note[] {
+  const liveNotes = notes.filter((note) => note.deletedAt === undefined);
+  if (filter === "done") return liveNotes.filter(isDone);
+  const openNotes = liveNotes.filter((note) => !isDone(note));
+  return filter === "important" ? openNotes.filter((note) => note.important) : openNotes;
+}
+
+export function getDeletedNotes(notes: Note[]): Note[] {
+  return notes.filter((note) => note.deletedAt !== undefined).sort((a, b) => (b.deletedAt as number) - (a.deletedAt as number));
+}
+
+export function getDaysUntilPurge(note: Note, now: number): number {
+  const remaining = (note.deletedAt as number) + TRASH_RETENTION_DAYS * DAY_MS - now;
+  return Math.max(1, Math.ceil(remaining / DAY_MS));
+}
+
+export function removeExpiredNotes(notes: Note[], now: number): Note[] {
+  const oldestKept = now - TRASH_RETENTION_DAYS * DAY_MS;
+  const kept = notes.filter((note) => note.deletedAt === undefined || note.deletedAt > oldestKept);
+  return kept.length === notes.length ? notes : kept;
 }
 
 export function searchNotes(notes: Note[], query: string): Note[] {

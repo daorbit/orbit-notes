@@ -1,29 +1,32 @@
+import { applyNoteState, type NoteStateChange } from "./noteState";
+import { sanitizeNotes } from "./noteValidation";
 import type { Note } from "./types";
 
 const NOTES_KEY = "notes";
-
-function parseNotes(value: unknown): Note[] {
-  return Array.isArray(value) ? (value as Note[]) : [];
-}
+const NOTES_LOCK = "orbit-notes:notes";
 
 export async function readNotes(): Promise<Note[]> {
   const stored = await chrome.storage.local.get(NOTES_KEY);
-  return parseNotes(stored[NOTES_KEY]);
+  return sanitizeNotes(stored[NOTES_KEY]);
 }
 
-export async function writeNotes(notes: Note[]): Promise<void> {
-  await chrome.storage.local.set({ [NOTES_KEY]: notes });
+export function updateNotes(change: (notes: Note[]) => Note[]): Promise<Note[]> {
+  return navigator.locks.request(NOTES_LOCK, async () => {
+    const notes = await readNotes();
+    const next = change(notes);
+    if (next !== notes) await chrome.storage.local.set({ [NOTES_KEY]: next });
+    return next;
+  });
 }
 
-export async function removeNoteImportant(id: string): Promise<void> {
-  const notes = await readNotes();
-  await writeNotes(notes.map((note) => (note.id === id ? { ...note, important: false } : note)));
+export function updateNoteState(id: string, change: NoteStateChange): Promise<Note[]> {
+  return updateNotes((notes) => notes.map((note) => (note.id === id ? applyNoteState(note, change) : note)));
 }
 
 export function subscribeToNotes(listener: (notes: Note[]) => void): () => void {
   const handleChange = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
     const change = changes[NOTES_KEY];
-    if (area === "local" && change) listener(parseNotes(change.newValue));
+    if (area === "local" && change) listener(sanitizeNotes(change.newValue));
   };
   chrome.storage.onChanged.addListener(handleChange);
   return () => chrome.storage.onChanged.removeListener(handleChange);

@@ -4,34 +4,42 @@ import { ConfirmDialog } from "@/ui/ConfirmDialog";
 import { TopBar } from "@/ui/TopBar";
 import { useEscapeKey } from "@/ui/useEscapeKey";
 import { hasContent } from "../noteSelectors";
-import type { NoteValues } from "../types";
+import type { NoteDraft, NoteSource, NoteValues } from "../types";
 import { useDraftPersistence } from "../useDraftPersistence";
 import classes from "./noteEditorScreen.module.css";
 
 const EMPTY_VALUES: NoteValues = { title: "", body: "" };
 const SAVE_SHORTCUT = navigator.userAgent.includes("Mac") ? "⌘ Return to save" : "Ctrl + Enter to save";
 
+export type IncomingText = {
+  id: number;
+  text: string;
+};
+
 type NoteEditorScreenProps = {
   noteId: string | null;
   savedValues?: NoteValues;
-  restoredDraft?: NoteValues;
-  onSave: (noteId: string | null, values: NoteValues) => Promise<boolean>;
+  restoredDraft?: NoteDraft;
+  incomingText?: IncomingText;
+  onSave: (noteId: string | null, values: NoteValues, source?: NoteSource) => Promise<boolean>;
   onCancel: (noteId: string | null) => void;
 };
 
-export function NoteEditorScreen({ noteId, savedValues, restoredDraft, onSave, onCancel }: NoteEditorScreenProps) {
+export function NoteEditorScreen({ noteId, savedValues, restoredDraft, incomingText, onSave, onCancel }: NoteEditorScreenProps) {
   const baseline = savedValues ?? EMPTY_VALUES;
+  const source = restoredDraft?.source;
   const [title, setTitle] = useState((restoredDraft ?? baseline).title);
   const [body, setBody] = useState((restoredDraft ?? baseline).body);
   const [isSaving, setIsSaving] = useState(false);
   const [isDiscardOpen, setIsDiscardOpen] = useState(false);
   const titleInput = useRef<HTMLTextAreaElement>(null);
   const bodyInput = useRef<HTMLTextAreaElement>(null);
+  const lastIncomingId = useRef<number | null>(null);
 
   const isDirty = title !== baseline.title || body !== baseline.body;
   const canSave = isDirty && hasContent({ title, body }) && !isSaving;
 
-  useDraftPersistence({ noteId, title, body }, isDirty && !isSaving);
+  useDraftPersistence({ noteId, title, body, source }, isDirty && !isSaving);
 
   useEffect(() => {
     const field = noteId ? bodyInput.current : titleInput.current;
@@ -39,10 +47,16 @@ export function NoteEditorScreen({ noteId, savedValues, restoredDraft, onSave, o
     field?.setSelectionRange(field.value.length, field.value.length);
   }, [noteId]);
 
+  useEffect(() => {
+    if (!incomingText || lastIncomingId.current === incomingText.id) return;
+    lastIncomingId.current = incomingText.id;
+    setBody((current) => (current ? `${current}\n\n${incomingText.text}` : incomingText.text));
+  }, [incomingText]);
+
   const handleSave = async () => {
     if (!canSave) return;
     setIsSaving(true);
-    const saved = await onSave(noteId, { title, body });
+    const saved = await onSave(noteId, { title, body }, source);
     if (!saved) setIsSaving(false);
   };
 
@@ -98,6 +112,7 @@ export function NoteEditorScreen({ noteId, savedValues, restoredDraft, onSave, o
             onChange={(event) => setTitle(event.target.value.replace(/\n/g, " "))}
             onKeyDown={handleTitleKeyDown}
           />
+          {source && <p className={classes.source}>From {source.title || source.url}</p>}
           <textarea
             ref={bodyInput}
             className={classes.body}

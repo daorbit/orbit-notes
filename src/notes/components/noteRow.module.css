@@ -49,10 +49,28 @@
   gap: 5px;
 }
 
-.flag {
+.stateIcon {
   flex: none;
+  color: var(--label-secondary);
+}
+
+.flag {
   color: var(--accent-strong);
   fill: currentColor;
+}
+
+.check {
+  flex: none;
+  padding-left: 6px;
+}
+
+.check + .open {
+  padding-left: 4px;
+}
+
+.isDone .title {
+  color: var(--label-secondary);
+  text-decoration: line-through;
 }
 
 .title {

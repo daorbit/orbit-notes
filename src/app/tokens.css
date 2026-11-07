@@ -16,6 +16,8 @@
   --danger-fill: #c4281c;
   --danger-fill-hover: #ad2318;
   --on-danger: #ffffff;
+  --segment-selected: #ffffff;
+  --switch-off: rgb(120 120 128 / 0.42);
   --shadow-popover: 0 8px 28px rgb(0 0 0 / 0.16), 0 1px 3px rgb(0 0 0 / 0.08);
 
   --mantine-color-body: var(--window);
@@ -42,6 +44,8 @@
   --danger-fill: #d32f2f;
   --danger-fill-hover: #e04040;
   --on-danger: #ffffff;
+  --segment-selected: #48484e;
+  --switch-off: rgb(120 120 128 / 0.5);
   --shadow-popover: 0 10px 32px rgb(0 0 0 / 0.55), 0 0 0 0.5px rgb(255 255 255 / 0.1);
 }
 

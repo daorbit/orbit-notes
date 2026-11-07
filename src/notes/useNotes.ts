@@ -1,6 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { readNotes, subscribeToNotes, writeNotes } from "./noteStorage";
-import type { Note, NoteValues } from "./types";
+import { useCallback, useEffect, useState } from "react";
+import { mergeBackup, type BackupMerge } from "./noteBackup";
+import { removeExpiredNotes } from "./noteSelectors";
+import { applyNoteState, type NoteStateChange } from "./noteState";
+import { readNotes, subscribeToNotes, updateNoteState, updateNotes } from "./noteStorage";
+import type { Note, NoteSource, NoteValues } from "./types";
 
 function cleanValues({ title, body }: NoteValues): NoteValues {
   return { title: title.trim(), body: body.trimEnd() };
@@ -9,60 +12,49 @@ function cleanValues({ title, body }: NoteValues): NoteValues {
 export function useNotes() {
   const [notes, setNotes] = useState<Note[] | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
-  const latestNotes = useRef<Note[]>([]);
-
-  const applyNotes = useCallback((next: Note[]) => {
-    latestNotes.current = next;
-    setNotes(next);
-  }, []);
 
   useEffect(() => {
-    readNotes()
-      .then(applyNotes)
+    updateNotes((current) => removeExpiredNotes(current, Date.now()))
+      .catch(readNotes)
+      .then(setNotes)
       .catch(() => setLoadFailed(true));
-    return subscribeToNotes(applyNotes);
-  }, [applyNotes]);
+    return subscribeToNotes(setNotes);
+  }, []);
 
-  const persist = useCallback(
-    async (next: Note[]) => {
-      await writeNotes(next);
-      applyNotes(next);
-    },
-    [applyNotes],
-  );
+  const saveNote = useCallback(async (id: string | null, values: NoteValues, source?: NoteSource): Promise<Note> => {
+    const now = Date.now();
+    const noteId = id ?? crypto.randomUUID();
+    const cleaned = cleanValues(values);
 
-  const saveNote = useCallback(
-    async (id: string | null, values: NoteValues): Promise<Note> => {
-      const now = Date.now();
-      const existing = latestNotes.current.find((note) => note.id === id);
-
-      if (existing) {
-        const updated: Note = { ...existing, ...cleanValues(values), updatedAt: now };
-        await persist(latestNotes.current.map((note) => (note.id === existing.id ? updated : note)));
-        return updated;
+    const next = await updateNotes((current) => {
+      if (current.some((note) => note.id === noteId)) {
+        return current.map((note) => (note.id === noteId ? applyNoteState({ ...note, ...cleaned, updatedAt: now }, { deletedAt: null }) : note));
       }
+      return [{ id: noteId, ...cleaned, pinned: false, ...(source && { source }), createdAt: now, updatedAt: now }, ...current];
+    });
 
-      const created: Note = { id: crypto.randomUUID(), ...cleanValues(values), pinned: false, createdAt: now, updatedAt: now };
-      await persist([created, ...latestNotes.current]);
-      return created;
-    },
-    [persist],
-  );
+    setNotes(next);
+    return next.find((note) => note.id === noteId) as Note;
+  }, []);
 
-  const togglePin = useCallback(
-    (id: string) => persist(latestNotes.current.map((note) => (note.id === id ? { ...note, pinned: !note.pinned } : note))),
-    [persist],
-  );
+  const changeNoteState = useCallback(async (id: string, change: NoteStateChange) => {
+    setNotes(await updateNoteState(id, change));
+  }, []);
 
-  const toggleImportant = useCallback(
-    (id: string) => persist(latestNotes.current.map((note) => (note.id === id ? { ...note, important: !note.important } : note))),
-    [persist],
-  );
+  const deleteForever = useCallback(async (ids: string[]) => {
+    const removed = new Set(ids);
+    setNotes(await updateNotes((current) => current.filter((note) => !removed.has(note.id))));
+  }, []);
 
-  const deleteNote = useCallback(
-    (id: string) => persist(latestNotes.current.filter((note) => note.id !== id)),
-    [persist],
-  );
+  const importNotes = useCallback(async (incoming: Note[]): Promise<BackupMerge> => {
+    let merge: BackupMerge = { notes: [], added: 0, updated: 0 };
+    const next = await updateNotes((current) => {
+      merge = mergeBackup(current, incoming);
+      return merge.notes;
+    });
+    setNotes(next);
+    return merge;
+  }, []);
 
-  return { notes, loadFailed, saveNote, togglePin, toggleImportant, deleteNote };
+  return { notes, loadFailed, saveNote, changeNoteState, deleteForever, importNotes };
 }

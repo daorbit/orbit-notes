@@ -1,84 +1,110 @@
-import { getNoteDescription, getNoteTitle } from "@/notes/noteSelectors";
 import type { Note } from "@/notes/types";
-import { createIcon, type IconName } from "./icons";
+import type { FloaterActions } from "./floaterActions";
+import { createCard } from "./floaterCard";
+import { createButton, createElement, createIconButton } from "./floaterDom";
+import { createMenu, positionMenu } from "./floaterMenu";
+import type { FloaterCorner } from "./floaterPreferences";
+import { createIcon } from "./icons";
 
-const MAX_VISIBLE_CARDS = 3;
-
-export type FloaterActions = {
-  onOpenNote: (noteId: string) => void;
-  onOpenPanel: () => void;
-  onRemove: (noteId: string) => void;
-  onCollapsedChange: (isCollapsed: boolean) => void;
+export type FloaterReceipt = {
+  message: string;
+  canUndo: boolean;
 };
 
-function createElement<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text?: string): HTMLElementTagNameMap[K] {
-  const element = document.createElement(tag);
-  element.className = className;
-  if (text) element.textContent = text;
+export type FloaterViewState = {
+  notes: Note[];
+  isMinimized: boolean;
+  isExpanded: boolean;
+  corner: FloaterCorner;
+  menuNoteId: string | null;
+  receipt: FloaterReceipt | null;
+  completingIds: Set<string>;
+  newIds: Set<string>;
+  site: string;
+  now: number;
+};
+
+function createNoteCard(note: Note, state: FloaterViewState, actions: FloaterActions): HTMLElement {
+  return createCard(
+    note,
+    {
+      isNew: state.newIds.has(note.id),
+      isCompleting: state.completingIds.has(note.id),
+      isMenuOpen: state.menuNoteId === note.id,
+    },
+    actions,
+  );
+}
+
+function createPill(count: number, actions: FloaterActions): HTMLElement {
+  const pill = createButton("pill glass", "pill", actions.onRestore);
+  pill.setAttribute("aria-label", `Show ${count} important ${count === 1 ? "note" : "notes"}`);
+  pill.append(createIcon("flag"), `${count} important`);
+  return pill;
+}
+
+function createPile(state: FloaterViewState, actions: FloaterActions): HTMLElement {
+  const [topNote, ...otherNotes] = state.notes;
+  const pile = createElement("div", "pile");
+
+  if (otherNotes.length > 0) {
+    pile.classList.add("hasPeek");
+    const peek = createButton("peekButton", "expand", actions.onExpand);
+    peek.setAttribute("aria-label", `Show all ${state.notes.length} important notes`);
+    if (otherNotes.length > 1) peek.append(createElement("span", "peek peekBack glass"));
+    peek.append(createElement("span", "peek peekFront glass", `${otherNotes.length} more`));
+    pile.append(peek);
+  }
+
+  pile.append(createNoteCard(topNote, state, actions));
+  return pile;
+}
+
+function createExpandedList(state: FloaterViewState, actions: FloaterActions, previousScrollTop: number): HTMLElement[] {
+  const header = createElement("div", "listHeader glass");
+  header.append(createElement("span", "listTitle", `${state.notes.length} important`));
+  const showLess = createButton("showLess", "collapse", actions.onCollapse);
+  showLess.textContent = "Show less";
+  header.append(showLess, createIconButton("minimize", "Minimize important notes", "minimize", actions.onMinimize));
+
+  const list = createElement("div", "list");
+  list.append(...state.notes.map((note) => createNoteCard(note, state, actions)));
+  queueMicrotask(() => {
+    list.scrollTop = previousScrollTop;
+  });
+  return [header, list];
+}
+
+function createReceipt(receipt: FloaterReceipt, actions: FloaterActions): HTMLElement {
+  const element = createElement("div", "receipt glass");
+  element.append(createElement("span", "receiptMessage", receipt.message));
+  if (receipt.canUndo) {
+    const undo = createButton("undo", "undo", actions.onUndo);
+    undo.textContent = "Undo";
+    element.append(undo);
+  }
   return element;
 }
 
-function createButton(className: string, onClick: () => void): HTMLButtonElement {
-  const button = createElement("button", className);
-  button.type = "button";
-  button.addEventListener("click", onClick);
-  return button;
+function createStackContent(state: FloaterViewState, actions: FloaterActions, previousScrollTop: number): HTMLElement[] {
+  if (state.notes.length === 0) return [];
+  if (state.isMinimized) return [createPill(state.notes.length, actions)];
+  if (state.isExpanded && state.notes.length > 1) return createExpandedList(state, actions, previousScrollTop);
+  return [createPile(state, actions)];
 }
 
-function createIconButton(icon: IconName, label: string, onClick: () => void): HTMLButtonElement {
-  const button = createButton("control", onClick);
-  button.setAttribute("aria-label", label);
-  button.title = label;
-  button.append(createIcon(icon));
-  return button;
-}
+export function renderFloaters(container: HTMLElement, state: FloaterViewState, actions: FloaterActions): void {
+  const previousScrollTop = container.querySelector(".list")?.scrollTop ?? 0;
+  const content = createStackContent(state, actions, previousScrollTop);
+  if (state.receipt) content.push(createReceipt(state.receipt, actions));
 
-function createCard(note: Note, isNew: boolean, actions: FloaterActions): HTMLElement {
-  const title = getNoteTitle(note);
-  const description = getNoteDescription(note);
-  const card = createElement("article", isNew ? "card isNew" : "card");
+  const menuNote = state.notes.find((note) => note.id === state.menuNoteId);
+  const menu = menuNote && createMenu(menuNote, state.corner, state.site, state.now, actions);
+  if (menu) content.push(menu);
 
-  const open = createButton("open", () => actions.onOpenNote(note.id));
-  open.setAttribute("aria-label", `Open note: ${title}`);
-  open.append(createIcon("flag"));
-  const text = createElement("span", "text");
-  text.append(createElement("span", "title", title));
-  if (description) text.append(createElement("span", "description", description));
-  open.append(text);
+  container.dataset.corner = state.corner;
+  container.replaceChildren(...content);
 
-  const controls = createElement("div", "controls");
-  controls.append(
-    createIconButton("minimize", "Minimize important notes", () => actions.onCollapsedChange(true)),
-    createIconButton("close", `Remove ${title} from tabs`, () => actions.onRemove(note.id)),
-  );
-
-  card.append(open, controls);
-  return card;
-}
-
-export function renderFloaters(container: HTMLElement, notes: Note[], isCollapsed: boolean, actions: FloaterActions): void {
-  const previousIds = new Set(container.dataset.noteIds?.split(",").filter(Boolean));
-  const hasRendered = container.dataset.noteIds !== undefined;
-  container.dataset.noteIds = notes.map((note) => note.id).join(",");
-
-  if (isCollapsed) {
-    const pill = createButton("pill", () => actions.onCollapsedChange(false));
-    pill.setAttribute("aria-label", `Show ${notes.length} important ${notes.length === 1 ? "note" : "notes"}`);
-    pill.append(createIcon("flag"), `${notes.length} important`);
-    container.replaceChildren(pill);
-    return;
-  }
-
-  const cards = notes
-    .slice(0, MAX_VISIBLE_CARDS)
-    .map((note) => createCard(note, hasRendered && !previousIds.has(note.id), actions));
-  const hiddenCount = notes.length - MAX_VISIBLE_CARDS;
-
-  if (hiddenCount > 0) {
-    const more = createButton("more", actions.onOpenPanel);
-    more.textContent = `${hiddenCount} more important`;
-    container.replaceChildren(...cards, more);
-  } else {
-    container.replaceChildren(...cards);
-  }
+  const trigger = menuNote && container.querySelector<HTMLElement>(`[data-focus-key="menu-${menuNote.id}"]`);
+  if (menu && trigger) positionMenu(menu, trigger, container, state.corner);
 }

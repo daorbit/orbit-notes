@@ -15,6 +15,7 @@ export default defineManifest({
   name: "Orbit Notes",
   description: "Your notes in the side panel, with important ones on every tab.",
   version: pkg.version,
+  minimum_chrome_version: "116",
   icons,
   action: {
     default_icon: icons,
@@ -27,7 +28,7 @@ export default defineManifest({
   side_panel: {
     default_path: "src/panel/index.html",
   },
-  permissions: ["scripting", "sidePanel", "storage"],
+  permissions: ["contextMenus", "scripting", "sidePanel", "storage"],
   host_permissions: webPages,
   content_scripts: [
     {
