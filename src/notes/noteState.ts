@@ -1,8 +1,9 @@
-import type { Note } from "./types";
+import type { Note, NoteColor } from "./types";
 
 export type NoteStateChange = {
   pinned?: boolean;
   important?: boolean;
+  color?: NoteColor;
   doneAt?: number | null;
   snoozedUntil?: number | null;
   deletedAt?: number | null;

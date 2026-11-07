@@ -1,3 +1,4 @@
+import { getNoteColor } from "@/notes/noteColors";
 import type { Note } from "@/notes/types";
 import type { FloaterActions } from "./floaterActions";
 import { createCard } from "./floaterCard";
@@ -35,8 +36,16 @@ function createNoteCard(note: Note, state: FloaterViewState, actions: FloaterAct
   );
 }
 
-function createPill(count: number, actions: FloaterActions): HTMLElement {
+function createPeek(className: string, note: Note, text?: string): HTMLElement {
+  const peek = createElement("span", `peek ${className} glass`, text);
+  peek.dataset.color = getNoteColor(note);
+  return peek;
+}
+
+function createPill(notes: Note[], actions: FloaterActions): HTMLElement {
+  const count = notes.length;
   const pill = createButton("pill glass", "pill", actions.onRestore);
+  pill.dataset.color = getNoteColor(notes[0]);
   pill.setAttribute("aria-label", `Show ${count} important ${count === 1 ? "note" : "notes"}`);
   pill.append(createIcon("flag"), `${count} important`);
   return pill;
@@ -50,8 +59,8 @@ function createPile(state: FloaterViewState, actions: FloaterActions): HTMLEleme
     pile.classList.add("hasPeek");
     const peek = createButton("peekButton", "expand", actions.onExpand);
     peek.setAttribute("aria-label", `Show all ${state.notes.length} important notes`);
-    if (otherNotes.length > 1) peek.append(createElement("span", "peek peekBack glass"));
-    peek.append(createElement("span", "peek peekFront glass", `${otherNotes.length} more`));
+    if (otherNotes.length > 1) peek.append(createPeek("peekBack", otherNotes[1]));
+    peek.append(createPeek("peekFront", otherNotes[0], `${otherNotes.length} more`));
     pile.append(peek);
   }
 
@@ -87,7 +96,7 @@ function createReceipt(receipt: FloaterReceipt, actions: FloaterActions): HTMLEl
 
 function createStackContent(state: FloaterViewState, actions: FloaterActions, previousScrollTop: number): HTMLElement[] {
   if (state.notes.length === 0) return [];
-  if (state.isMinimized) return [createPill(state.notes.length, actions)];
+  if (state.isMinimized) return [createPill(state.notes, actions)];
   if (state.isExpanded && state.notes.length > 1) return createExpandedList(state, actions, previousScrollTop);
   return [createPile(state, actions)];
 }

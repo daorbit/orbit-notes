@@ -8,10 +8,13 @@ export type NoteSource = {
   title: string;
 };
 
+export type NoteColor = "amber" | "rose" | "violet" | "blue" | "green";
+
 export type Note = NoteValues & {
   id: string;
   pinned: boolean;
   important?: boolean;
+  color?: NoteColor;
   doneAt?: number;
   snoozedUntil?: number;
   deletedAt?: number;

@@ -20,6 +20,7 @@ import { detectPageAppearance } from "./pageAppearance";
 const COMPLETE_ANIMATION_MS = 420;
 const RECEIPT_DURATION_MS = 6000;
 const RECEIPT_RECHECK_MS = 1500;
+const RECEIPT_MAX_DURATION_MS = 20000;
 const SCROLL_SETTLE_MS = 180;
 const APPEARANCE_SAMPLE_INSET_PX = 40;
 const MAX_TIMER_MS = 2_147_483_647;
@@ -41,6 +42,7 @@ export function startFloaterController({ host, shadow, stack, announcer }: Contr
   let menuNoteId: string | null = null;
   let receipt: FloaterReceipt | null = null;
   let undoReceipt: (() => void) | null = null;
+  let receiptShownAt = 0;
   let receiptTimer: ReturnType<typeof setTimeout> | undefined;
   let snoozeTimer: ReturnType<typeof setTimeout> | undefined;
   let scrollTimer: ReturnType<typeof setTimeout> | undefined;
@@ -132,8 +134,8 @@ export function startFloaterController({ host, shadow, stack, announcer }: Contr
   }
 
   function expireReceipt(): void {
-    const isInUse = stack.matches(":hover") || (shadow.activeElement as HTMLElement | null)?.dataset.focusKey === "undo";
-    if (isInUse) {
+    const isInUse = stack.matches(":hover") || shadow.activeElement?.matches(":focus-visible");
+    if (isInUse && Date.now() - receiptShownAt < RECEIPT_MAX_DURATION_MS) {
       receiptTimer = setTimeout(expireReceipt, RECEIPT_RECHECK_MS);
     } else {
       dismissReceipt();
@@ -143,6 +145,7 @@ export function startFloaterController({ host, shadow, stack, announcer }: Contr
   function showReceipt(message: string, undo: (() => void) | null): void {
     clearTimeout(receiptTimer);
     receipt = { message, canUndo: undo !== null };
+    receiptShownAt = Date.now();
     undoReceipt = undo;
     announcer.textContent = message;
     if (undo) pendingFocusKey = "undo";
@@ -237,6 +240,12 @@ export function startFloaterController({ host, shadow, stack, announcer }: Contr
 
     onSnooze: (note, option: SnoozeOption) => {
       changeNoteWithUndo(note, { snoozedUntil: option.until }, { snoozedUntil: note.snoozedUntil ?? null }, describeSnooze(option.until, Date.now()));
+    },
+
+    onColor: (note, color) => {
+      pendingFocusKey = `menu-color-${color}`;
+      changeNote(note, { color });
+      render();
     },
 
     onMoveTo: moveTo,

@@ -1,5 +1,5 @@
 import type { SnoozeOption } from "@/notes/noteSnooze";
-import type { Note } from "@/notes/types";
+import type { Note, NoteColor } from "@/notes/types";
 import type { FloaterCorner } from "./floaterPreferences";
 
 export type FloaterActions = {
@@ -12,6 +12,7 @@ export type FloaterActions = {
   onExpand: () => void;
   onCollapse: () => void;
   onSnooze: (note: Note, option: SnoozeOption) => void;
+  onColor: (note: Note, color: NoteColor) => void;
   onMoveTo: (corner: FloaterCorner) => void;
   onHideSite: () => void;
   onRemove: (note: Note) => void;

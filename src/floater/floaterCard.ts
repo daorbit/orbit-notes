@@ -1,3 +1,4 @@
+import { getNoteColor } from "@/notes/noteColors";
 import { getNoteDescription, getNoteTitle } from "@/notes/noteSelectors";
 import type { Note } from "@/notes/types";
 import type { FloaterActions } from "./floaterActions";
@@ -35,6 +36,7 @@ export function createCard(note: Note, state: CardState, actions: FloaterActions
   const title = getNoteTitle(note);
   const description = getNoteDescription(note);
   const card = createElement("article", getCardClass(state));
+  card.dataset.color = getNoteColor(note);
   trackSheen(card);
 
   const open = createButton("open", `open-${note.id}`, () => actions.onOpenNote(note));

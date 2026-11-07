@@ -1,3 +1,4 @@
+import { isNoteColor } from "./noteColors";
 import type { Note, NoteSource } from "./types";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -42,6 +43,7 @@ export function sanitizeNote(value: unknown): Note | null {
     createdAt,
     updatedAt,
     ...(value.important === true && { important: true }),
+    ...(isNoteColor(value.color) && { color: value.color }),
     ...(doneAt !== undefined && { doneAt }),
     ...(snoozedUntil !== undefined && { snoozedUntil }),
     ...(deletedAt !== undefined && { deletedAt }),

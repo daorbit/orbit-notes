@@ -1,3 +1,4 @@
+import { getNoteColor, NOTE_COLORS } from "@/notes/noteColors";
 import { getSnoozeOptions } from "@/notes/noteSnooze";
 import type { Note } from "@/notes/types";
 import type { FloaterActions } from "./floaterActions";
@@ -22,25 +23,44 @@ function createMenuItem(label: string, focusKey: string, onClick: () => void, de
   return item;
 }
 
-function createCornerRow(currentCorner: FloaterCorner, actions: FloaterActions): HTMLElement {
-  const row = createElement("div", "cornerRow");
-  const picker = createElement("div", "cornerPicker");
+function createPickerOption(className: string, focusKey: string, label: string, title: string, isChecked: boolean, onClick: () => void): HTMLButtonElement {
+  const option = createButton(className, focusKey, onClick);
+  option.setAttribute("role", "menuitemradio");
+  option.setAttribute("aria-checked", String(isChecked));
+  option.setAttribute("aria-label", label);
+  option.title = title;
+  option.tabIndex = -1;
+  return option;
+}
+
+function createPickerRow(label: string, options: HTMLElement[]): HTMLElement {
+  const row = createElement("div", "menuRow");
+  const picker = createElement("div", "picker");
   picker.setAttribute("role", "group");
-  picker.setAttribute("aria-label", "Position");
-  row.append(createElement("span", "menuLabel", "Position"), picker);
-
-  for (const corner of FLOATER_CORNERS) {
-    const option = createButton("cornerOption", `menu-corner-${corner}`, () => actions.onMoveTo(corner));
-    option.dataset.corner = corner;
-    option.setAttribute("role", "menuitemradio");
-    option.setAttribute("aria-checked", String(corner === currentCorner));
-    option.setAttribute("aria-label", `Move to ${CORNER_LABELS[corner].toLowerCase()}`);
-    option.title = CORNER_LABELS[corner];
-    option.tabIndex = -1;
-    picker.append(option);
-  }
-
+  picker.setAttribute("aria-label", label);
+  picker.append(...options);
+  row.append(createElement("span", "menuLabel", label), picker);
   return row;
+}
+
+function createColorRow(note: Note, actions: FloaterActions): HTMLElement {
+  const currentColor = getNoteColor(note);
+  const options = NOTE_COLORS.map(({ value, label }) => {
+    const option = createPickerOption("colorOption", `menu-color-${value}`, `Color ${label.toLowerCase()}`, label, value === currentColor, () => actions.onColor(note, value));
+    option.dataset.swatch = value;
+    return option;
+  });
+  return createPickerRow("Color", options);
+}
+
+function createCornerRow(currentCorner: FloaterCorner, actions: FloaterActions): HTMLElement {
+  const options = FLOATER_CORNERS.map((corner) => {
+    const label = CORNER_LABELS[corner];
+    const option = createPickerOption("cornerOption", `menu-corner-${corner}`, `Move to ${label.toLowerCase()}`, label, corner === currentCorner, () => actions.onMoveTo(corner));
+    option.dataset.corner = corner;
+    return option;
+  });
+  return createPickerRow("Position", options);
 }
 
 function moveFocus(menu: HTMLElement, key: string): void {
@@ -83,6 +103,7 @@ export function createMenu(note: Note, corner: FloaterCorner, now: number, actio
 
   menu.append(
     createElement("div", "menuSeparator"),
+    createColorRow(note, actions),
     createCornerRow(corner, actions),
     createElement("div", "menuSeparator"),
     createMenuItem("Hide on this site", "menu-hide-site", actions.onHideSite),
@@ -99,7 +120,7 @@ export function positionMenu(menu: HTMLElement, trigger: HTMLElement, stack: HTM
   const opensUp = corner.startsWith("bottom");
 
   menu.classList.toggle("opensUp", opensUp);
-  menu.style.setProperty("--menu-right", `${stackRect.right - triggerRect.right}px`);
+  menu.style.setProperty("--menu-left", `${Math.max(0, triggerRect.right - stackRect.left - menu.offsetWidth)}px`);
   menu.style.setProperty("--menu-offset", `${opensUp ? stackRect.bottom - triggerRect.top + 6 : triggerRect.bottom - stackRect.top + 6}px`);
   menu.style.setProperty("--menu-max-height", `${(opensUp ? triggerRect.top : window.innerHeight - triggerRect.bottom) - 18}px`);
 }
