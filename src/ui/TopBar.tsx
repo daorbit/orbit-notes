@@ -11,7 +11,7 @@ export function TopBar({ leading, title, actions }: TopBarProps) {
   return (
     <header className={classes.bar}>
       <div className={classes.leading}>{leading}</div>
-      {title && <h1 className={classes.title}>{title}</h1>}
+      {title ? <h1 className={classes.title}>{title}</h1> : <span />}
       <div className={classes.actions}>{actions}</div>
     </header>
   );

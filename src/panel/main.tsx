@@ -12,7 +12,7 @@ import { App } from "./App";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <MantineProvider theme={theme} defaultColorScheme="auto">
-      <Notifications position="top-center" limit={3} />
+      <Notifications position="bottom-center" limit={3} />
       <App />
     </MantineProvider>
   </StrictMode>,

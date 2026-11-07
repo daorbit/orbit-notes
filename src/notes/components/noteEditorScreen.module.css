@@ -28,6 +28,8 @@
   color: var(--label);
   caret-color: var(--accent-strong);
   font-family: inherit;
+  scrollbar-color: var(--separator) transparent;
+  scrollbar-width: thin;
 }
 
 .title::placeholder,
@@ -54,8 +56,6 @@
   font-size: 14px;
   letter-spacing: -0.006em;
   line-height: 1.6;
-  scrollbar-color: var(--separator) transparent;
-  scrollbar-width: thin;
 }
 
 .footer {
