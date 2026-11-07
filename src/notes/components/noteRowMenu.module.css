@@ -1,0 +1,39 @@
+.dropdown.dropdown {
+  padding: 4px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: var(--shadow-popover);
+}
+
+.item.item {
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: var(--label);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.006em;
+}
+
+.item.item:hover,
+.item.item[data-hovered] {
+  background: var(--surface-hover);
+}
+
+.itemSection.itemSection {
+  color: inherit;
+}
+
+.divider.divider {
+  margin: 4px;
+  border-color: var(--separator);
+}
+
+.item.danger {
+  color: var(--danger);
+}
+
+.item.danger:hover,
+.item.danger[data-hovered] {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+}

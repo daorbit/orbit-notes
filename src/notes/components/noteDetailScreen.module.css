@@ -1,0 +1,45 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.back {
+  padding-inline: 2px 10px;
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+.article {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 10px 18px 28px;
+}
+
+.title {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.date {
+  margin: 0;
+  color: var(--label-secondary);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.body {
+  margin: 16px 0 0;
+  font-size: 14px;
+  letter-spacing: -0.006em;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}

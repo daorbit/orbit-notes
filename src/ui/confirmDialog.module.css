@@ -1,0 +1,36 @@
+.content.content {
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow-popover);
+}
+
+.body.body {
+  padding: 18px 16px 14px;
+  text-align: center;
+}
+
+.title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.016em;
+  line-height: 1.35;
+}
+
+.message {
+  margin: 0 0 16px;
+  color: var(--label-secondary);
+  font-size: 13px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action {
+  flex: 1;
+  min-width: 0;
+}

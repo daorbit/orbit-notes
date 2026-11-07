@@ -1,0 +1,64 @@
+.button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.006em;
+  white-space: nowrap;
+  transition: background-color 120ms linear;
+}
+
+.prominent {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.prominent:hover {
+  background: var(--accent-hover);
+}
+
+.neutral {
+  background: var(--field);
+  color: var(--label);
+}
+
+.neutral:hover {
+  background: var(--surface-pressed);
+}
+
+.plain {
+  background: transparent;
+  color: var(--label);
+  font-weight: 500;
+}
+
+.plain:hover {
+  background: var(--field);
+}
+
+.destructive {
+  background: var(--danger-fill);
+  color: var(--on-danger);
+}
+
+.destructive:hover {
+  background: var(--danger-fill-hover);
+}
+
+.button:disabled {
+  background: var(--field);
+  color: var(--label-secondary);
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+}

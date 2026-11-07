@@ -1,0 +1,42 @@
+.field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 4px 0 9px;
+  border-radius: 9px;
+  background: var(--field);
+}
+
+.field:focus-within {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 1px;
+}
+
+.icon {
+  flex: none;
+  color: var(--label-secondary);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--label);
+  caret-color: var(--accent-strong);
+  font: inherit;
+  font-size: 13px;
+  letter-spacing: -0.006em;
+}
+
+.input::placeholder {
+  color: var(--label-secondary);
+  opacity: 1;
+}
+
+.input::-webkit-search-cancel-button {
+  display: none;
+}

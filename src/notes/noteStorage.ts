@@ -1,19 +1,24 @@
-const NOTE_KEY = "note";
+import type { Note } from "./types";
 
-export async function readNote(): Promise<string> {
-  const stored = await chrome.storage.local.get(NOTE_KEY);
-  const note = stored[NOTE_KEY];
-  return typeof note === "string" ? note : "";
+const NOTES_KEY = "notes";
+
+function parseNotes(value: unknown): Note[] {
+  return Array.isArray(value) ? (value as Note[]) : [];
 }
 
-export async function writeNote(text: string): Promise<void> {
-  await chrome.storage.local.set({ [NOTE_KEY]: text });
+export async function readNotes(): Promise<Note[]> {
+  const stored = await chrome.storage.local.get(NOTES_KEY);
+  return parseNotes(stored[NOTES_KEY]);
 }
 
-export function subscribeToNote(listener: (text: string) => void): () => void {
+export async function writeNotes(notes: Note[]): Promise<void> {
+  await chrome.storage.local.set({ [NOTES_KEY]: notes });
+}
+
+export function subscribeToNotes(listener: (notes: Note[]) => void): () => void {
   const handleChange = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
-    const change = changes[NOTE_KEY];
-    if (area === "local" && change) listener(typeof change.newValue === "string" ? change.newValue : "");
+    const change = changes[NOTES_KEY];
+    if (area === "local" && change) listener(parseNotes(change.newValue));
   };
   chrome.storage.onChanged.addListener(handleChange);
   return () => chrome.storage.onChanged.removeListener(handleChange);

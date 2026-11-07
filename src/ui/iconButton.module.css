@@ -3,31 +3,33 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: var(--control-size);
-  height: var(--control-size);
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius-control);
-  background: transparent;
-  color: var(--color-label-secondary);
-  cursor: default;
+  border-radius: 8px;
+  color: var(--label-secondary);
   transition:
-    background-color var(--duration-feedback) linear,
-    color var(--duration-feedback) linear;
+    background-color 120ms linear,
+    color 120ms linear;
 }
 
-.button:hover {
-  background: var(--color-fill-hover);
-  color: var(--color-label);
+.regular {
+  width: 30px;
+  height: 30px;
 }
 
-.button:active {
-  background: var(--color-fill-pressed);
+.small {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
 }
 
-.button:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 1px;
+.neutral:hover,
+.neutral[aria-expanded="true"] {
+  background: var(--field);
+  color: var(--label);
+}
+
+.danger:hover {
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  color: var(--danger);
 }
 
 @media (prefers-reduced-motion: reduce) {

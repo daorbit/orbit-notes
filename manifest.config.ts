@@ -1,4 +1,4 @@
-import { defineDynamicResource, defineManifest } from "@crxjs/vite-plugin";
+import { defineManifest } from "@crxjs/vite-plugin";
 import pkg from "./package.json" with { type: "json" };
 
 const icons = {
@@ -11,34 +11,27 @@ const icons = {
 export default defineManifest({
   manifest_version: 3,
   name: "Orbit Notes",
-  description: "Capture a thought without leaving the page.",
+  description: "Your notes, in the browser side panel.",
   version: pkg.version,
   icons,
   action: {
     default_icon: icons,
-    default_title: "Orbit Notes",
+    default_title: "Open Orbit Notes",
   },
   background: {
     service_worker: "src/background/service-worker.ts",
     type: "module",
   },
-  permissions: ["activeTab", "scripting", "storage"],
+  side_panel: {
+    default_path: "src/panel/index.html",
+  },
+  permissions: ["sidePanel", "storage"],
   commands: {
-    _execute_action: {
+    "open-notes": {
       suggested_key: {
         default: "Alt+Shift+N",
       },
+      description: "Open Orbit Notes",
     },
   },
-  web_accessible_resources: [
-    {
-      resources: ["src/drawer/index.html", "assets/*"],
-      matches: ["<all_urls>"],
-      use_dynamic_url: true,
-    },
-    defineDynamicResource({
-      matches: ["<all_urls>"],
-      use_dynamic_url: true,
-    }),
-  ],
 });

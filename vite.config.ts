@@ -11,13 +11,6 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
-  build: {
-    rolldownOptions: {
-      input: {
-        drawer: "src/drawer/index.html",
-      },
-    },
-  },
   server: {
     port: 5175,
     strictPort: true,

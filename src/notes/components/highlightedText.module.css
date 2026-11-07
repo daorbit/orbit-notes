@@ -1,0 +1,6 @@
+.mark {
+  border-radius: 3px;
+  background: var(--highlight);
+  color: var(--label);
+  box-decoration-break: clone;
+}
