@@ -6,6 +6,7 @@ export type NoteValues = {
 export type Note = NoteValues & {
   id: string;
   pinned: boolean;
+  important?: boolean;
   createdAt: number;
   updatedAt: number;
 };

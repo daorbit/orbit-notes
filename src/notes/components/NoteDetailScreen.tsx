@@ -1,5 +1,5 @@
 import { ScrollArea } from "@mantine/core";
-import { ChevronLeft, Pin, PinOff, Trash2 } from "lucide-react";
+import { ChevronLeft, Flag, FlagOff, Pin, PinOff, Trash2 } from "lucide-react";
 import { ActionButton } from "@/ui/ActionButton";
 import { IconAction } from "@/ui/IconButton";
 import { TopBar } from "@/ui/TopBar";
@@ -13,10 +13,11 @@ type NoteDetailScreenProps = {
   onBack: () => void;
   onEdit: () => void;
   onTogglePin: () => void;
+  onToggleImportant: () => void;
   onDelete: () => void;
 };
 
-export function NoteDetailScreen({ note, onBack, onEdit, onTogglePin, onDelete }: NoteDetailScreenProps) {
+export function NoteDetailScreen({ note, onBack, onEdit, onTogglePin, onToggleImportant, onDelete }: NoteDetailScreenProps) {
   useEscapeKey(onBack);
 
   return (
@@ -30,6 +31,9 @@ export function NoteDetailScreen({ note, onBack, onEdit, onTogglePin, onDelete }
         }
         actions={
           <>
+            <IconAction label={note.important ? "Remove from tabs" : "Mark as important"} onClick={onToggleImportant}>
+              {note.important ? <FlagOff size={15} className={classes.important} /> : <Flag size={15} />}
+            </IconAction>
             <IconAction label={note.pinned ? "Unpin note" : "Pin note"} onClick={onTogglePin}>
               {note.pinned ? <PinOff size={15} /> : <Pin size={15} />}
             </IconAction>

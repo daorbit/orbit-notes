@@ -8,10 +8,12 @@ const icons = {
   128: "icons/icon128.png",
 };
 
+const webPages = ["http://*/*", "https://*/*"];
+
 export default defineManifest({
   manifest_version: 3,
   name: "Orbit Notes",
-  description: "Your notes, in the browser side panel.",
+  description: "Your notes in the side panel, with important ones on every tab.",
   version: pkg.version,
   icons,
   action: {
@@ -25,7 +27,15 @@ export default defineManifest({
   side_panel: {
     default_path: "src/panel/index.html",
   },
-  permissions: ["sidePanel", "storage"],
+  permissions: ["scripting", "sidePanel", "storage"],
+  host_permissions: webPages,
+  content_scripts: [
+    {
+      matches: webPages,
+      js: ["src/floater/index.iife.ts"],
+      run_at: "document_idle",
+    },
+  ],
   commands: {
     "open-notes": {
       suggested_key: {

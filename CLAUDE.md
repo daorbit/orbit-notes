@@ -18,6 +18,7 @@ To load the extension, open `chrome://extensions`, enable Developer mode, choose
 - `manifest.config.ts`: source of truth for the manifest, compiled to `dist/manifest.json`. The version comes from `package.json`. Do not add a static `manifest.json`.
 - `src/background/service-worker.ts`: opens the side panel from the toolbar icon and the `Alt+Shift+N` command.
 - `src/panel/`: side panel entry and `App`, which owns navigation and the delete flow.
+- `src/floater/`: content script that shows important notes on web pages. Plain DOM in a closed shadow root, with no React or Mantine, because it runs on every page. Always render note text with `textContent`.
 - `src/notes/`: the notes feature.
   - `useNotes.ts`: note state and mutations. Each mutation writes to storage before updating state.
   - `noteStorage.ts`, `noteDraftStorage.ts`: the only modules that touch `chrome.storage`.
@@ -41,6 +42,15 @@ Keep this flow intact. Notes never save implicitly.
 4. **Delete** always asks for confirmation through `ConfirmDialog`, from the list or the detail screen.
 
 After Save, the app shows the saved note on the detail screen. If the panel closes mid-edit, the draft reopens in the editor, and it is still unsaved until the user presses Save.
+
+## Important notes
+
+Marking a note as important shows it as a floating card at the bottom left of web pages, in every tab, updating live.
+
+- A card shows the title and a two-line description. Clicking it opens the note in the side panel, minimize collapses all cards to a pill in every tab, and `×` removes the important mark without deleting the note.
+- At most three cards show at once, followed by an "N more" button.
+- Chrome blocks content scripts on the New Tab page, other `chrome://` pages, and the Web Store, so cards can't appear there.
+- This feature is why the extension needs `host_permissions` and `scripting`. `scripting` adds the card to tabs that were already open when the extension installed or updated.
 
 ## Design system
 

@@ -15,6 +15,11 @@ export async function writeNotes(notes: Note[]): Promise<void> {
   await chrome.storage.local.set({ [NOTES_KEY]: notes });
 }
 
+export async function removeNoteImportant(id: string): Promise<void> {
+  const notes = await readNotes();
+  await writeNotes(notes.map((note) => (note.id === id ? { ...note, important: false } : note)));
+}
+
 export function subscribeToNotes(listener: (notes: Note[]) => void): () => void {
   const handleChange = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
     const change = changes[NOTES_KEY];

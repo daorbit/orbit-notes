@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { NoteDetailScreen } from "@/notes/components/NoteDetailScreen";
 import { NoteEditorScreen } from "@/notes/components/NoteEditorScreen";
 import { NotesListScreen } from "@/notes/components/NotesListScreen";
 import { clearNoteDraft, readNoteDraft } from "@/notes/noteDraftStorage";
 import { getNoteTitle } from "@/notes/noteSelectors";
 import type { Note, NoteValues } from "@/notes/types";
+import { useNoteOpenRequests } from "@/notes/useNoteOpenRequests";
 import { useNotes } from "@/notes/useNotes";
 import { notify } from "@/shared/notify";
 import { ConfirmDialog } from "@/ui/ConfirmDialog";
@@ -16,7 +17,7 @@ type Screen =
   | { name: "editor"; noteId: string | null; draft?: NoteValues };
 
 export function App() {
-  const { notes, loadFailed, saveNote, togglePin, deleteNote } = useNotes();
+  const { notes, loadFailed, saveNote, togglePin, toggleImportant, deleteNote } = useNotes();
   const [screen, setScreen] = useState<Screen>({ name: "list" });
   const [draftChecked, setDraftChecked] = useState(false);
   const [query, setQuery] = useState("");
@@ -31,6 +32,12 @@ export function App() {
       })
       .finally(() => setDraftChecked(true));
   }, []);
+
+  useNoteOpenRequests(
+    useCallback((noteId: string) => {
+      setScreen((current) => (current.name === "editor" ? current : { name: "detail", noteId }));
+    }, []),
+  );
 
   if (loadFailed) {
     return <EmptyState title="Notes can’t load" message="Close this panel and open it again." />;
@@ -73,6 +80,12 @@ export function App() {
     togglePin(id).catch(() => notify.error("That change isn’t saved. Try again."));
   };
 
+  const handleToggleImportant = (note: Note) => {
+    toggleImportant(note.id)
+      .then(() => notify.success(note.important ? "Removed from your tabs" : "Now showing on your tabs"))
+      .catch(() => notify.error("That change isn’t saved. Try again."));
+  };
+
   const handleConfirmDelete = async () => {
     if (!noteToDelete) return;
     setIsDeleting(true);
@@ -100,6 +113,7 @@ export function App() {
         onOpen={(noteId) => setScreen({ name: "detail", noteId })}
         onEdit={(noteId) => setScreen({ name: "editor", noteId })}
         onTogglePin={handleTogglePin}
+        onToggleImportant={handleToggleImportant}
         onDelete={setNoteToDelete}
       />
       {detailNote && (
@@ -108,6 +122,7 @@ export function App() {
           onBack={() => showList(detailNote.id)}
           onEdit={() => setScreen({ name: "editor", noteId: detailNote.id })}
           onTogglePin={() => handleTogglePin(detailNote.id)}
+          onToggleImportant={() => handleToggleImportant(detailNote)}
           onDelete={() => setNoteToDelete(detailNote)}
         />
       )}

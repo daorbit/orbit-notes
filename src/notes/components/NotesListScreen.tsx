@@ -19,6 +19,7 @@ type NotesListScreenProps = {
   onOpen: (id: string) => void;
   onEdit: (id: string) => void;
   onTogglePin: (id: string) => void;
+  onToggleImportant: (note: Note) => void;
   onDelete: (note: Note) => void;
 };
 
@@ -32,6 +33,7 @@ export function NotesListScreen({
   onOpen,
   onEdit,
   onTogglePin,
+  onToggleImportant,
   onDelete,
 }: NotesListScreenProps) {
   const screen = useRef<HTMLDivElement>(null);
@@ -75,7 +77,16 @@ export function NotesListScreen({
               <h2 className={classes.groupLabel}>{group.label}</h2>
               <div className={classes.group}>
                 {group.notes.map((note) => (
-                  <NoteRow key={note.id} note={note} query={query} onOpen={onOpen} onEdit={onEdit} onTogglePin={onTogglePin} onDelete={onDelete} />
+                  <NoteRow
+                    key={note.id}
+                    note={note}
+                    query={query}
+                    onOpen={onOpen}
+                    onEdit={onEdit}
+                    onTogglePin={onTogglePin}
+                    onToggleImportant={onToggleImportant}
+                    onDelete={onDelete}
+                  />
                 ))}
               </div>
             </section>

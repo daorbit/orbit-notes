@@ -30,6 +30,15 @@ export function getNotePreview(note: NoteValues, query = ""): string {
   return matchingLine ?? (note.title.trim() ? lines[0] : lines[1]) ?? NO_PREVIEW;
 }
 
+export function getNoteDescription(note: NoteValues): string {
+  const lines = getLines(note.body);
+  return (note.title.trim() ? lines : lines.slice(1)).join(" ");
+}
+
+export function getImportantNotes(notes: Note[]): Note[] {
+  return notes.filter((note) => note.important).sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
 export function searchNotes(notes: Note[], query: string): Note[] {
   const term = query.trim().toLowerCase();
   if (!term) return notes;

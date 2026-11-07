@@ -54,10 +54,15 @@ export function useNotes() {
     [persist],
   );
 
+  const toggleImportant = useCallback(
+    (id: string) => persist(latestNotes.current.map((note) => (note.id === id ? { ...note, important: !note.important } : note))),
+    [persist],
+  );
+
   const deleteNote = useCallback(
     (id: string) => persist(latestNotes.current.filter((note) => note.id !== id)),
     [persist],
   );
 
-  return { notes, loadFailed, saveNote, togglePin, deleteNote };
+  return { notes, loadFailed, saveNote, togglePin, toggleImportant, deleteNote };
 }

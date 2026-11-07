@@ -43,8 +43,21 @@
   white-space: nowrap;
 }
 
+.titleLine {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.flag {
+  flex: none;
+  color: var(--accent-strong);
+  fill: currentColor;
+}
+
 .title {
   display: block;
+  min-width: 0;
   font-size: 13.5px;
   font-weight: 600;
   letter-spacing: -0.01em;
