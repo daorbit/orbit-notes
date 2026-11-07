@@ -1,0 +1,37 @@
+.button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-size);
+  height: var(--control-size);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-label-secondary);
+  cursor: default;
+  transition:
+    background-color var(--duration-feedback) linear,
+    color var(--duration-feedback) linear;
+}
+
+.button:hover {
+  background: var(--color-fill-hover);
+  color: var(--color-label);
+}
+
+.button:active {
+  background: var(--color-fill-pressed);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+}

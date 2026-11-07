@@ -1,0 +1,24 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 44rem;
+  margin-inline: auto;
+}
+
+.header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--control-size);
+  padding: var(--space-3) var(--space-3) var(--space-1) var(--space-4);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-title-size);
+  font-weight: 600;
+  line-height: var(--text-title-leading);
+  letter-spacing: var(--text-title-tracking);
+}
